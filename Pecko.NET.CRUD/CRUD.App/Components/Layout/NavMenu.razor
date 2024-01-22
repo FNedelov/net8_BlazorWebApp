@@ -1,0 +1,80 @@
+﻿@using CRUD.App.Classes
+@inject CustomAuthenticationStateProvider provider
+@inject IHttpContextAccessor httpContextAccessor
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">CRUD.App </a>
+    </div>
+</div>
+
+<div style="color:white">Hello, @User!</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<AuthorizeView Roles="@($"{AppRoles.ADMIN}, {AppRoles.BATMAN}")">
+    <Authorized>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link">
+                <span class="oi oi-cog" aria-hidden="true"></span> Admin functions
+            </NavLink>
+        </li>
+    </Authorized>
+</AuthorizeView>
+
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="weather">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    public string User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetClaimsPrincipalData();
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await provider
+            .GetAuthenticationStateAsync();
+        var user = authState.User;
+        User = user.Identity.Name;
+
+        // if (user.Identity is not null && user.Identity.IsAuthenticated)
+        // {
+        //     authMessage = $"{user.Identity.Name} is authenticated.";
+        //     claims = user.Claims;
+        //     surname = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
+        // }
+        // else
+        // {
+        //     authMessage = "The user is NOT authenticated.";
+        // }
+    }
+}

@@ -1,0 +1,70 @@
+﻿@using CRUD.Common.DTOs;
+@using CRUD.App.Classes;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject CustomAuthenticationStateProvider provider
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject IHttpContextAccessor httpContextAccessor
+@attribute [StreamRendering(true)]
+
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+@*             <AuthorizeRouteView RouteData="@routeData"
+                                DefaultLayout="@typeof(Layout.MainLayout)" /> *@
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    public const string ROLE_ADMIN = "Admin";
+    public const string ROLE_USER = "User";
+    public const string SYSTEM = "System";
+    public const string UNKNOWN = "Unknown";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var data = httpContextAccessor?.HttpContext?.User?.Identity?.Name?.ToLower();
+            var windowsUser = data?.Split(@"\")[1];
+
+            // var stuff = Environment.UserName;
+            await SetAuthenticationState();
+            await GetClaimsPrincipalData();
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+
+    private async Task SetAuthenticationState()
+    {
+        await provider.SetAuthInfo(new UserRoleDto
+            {
+                UserName = Environment.UserName,
+                RoleDefinition = ROLE_ADMIN
+                // RoleDefinition = ROLE_USER
+            });
+    }
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await provider
+            .GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // if (user.Identity is not null && user.Identity.IsAuthenticated)
+        // {
+        //     authMessage = $"{user.Identity.Name} is authenticated.";
+        //     claims = user.Claims;
+        //     surname = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
+        // }
+        // else
+        // {
+        //     authMessage = "The user is NOT authenticated.";
+        // }
+    }
+}
